@@ -1,0 +1,59 @@
+{% extends "base.html" %} {% block content %}
+{% block extra_css %}
+<style>
+  input{
+    margin:0px 0px 10px 20px;
+}
+.form-control{
+width:50%;
+}
+label{
+   margin:10px 0px 0px 20px;
+}
+</style>
+{% endblock %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <p style="color:red;">{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
+<form action="{{url_for('add_pro')}}" method="post" enctype='multipart/form-data'>
+  <div class="mb-3">
+    <label for="name" class="form-label">Product Name</label>
+    <input type="text" name="name" class="form-control" id="name">
+  </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <p style="color:red;">{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
+  <div class="input-group mb-3">
+  <input type="file" class="form-control" name="file" id="inputGroupFile02">
+  </div>
+
+
+
+
+
+  <div class="mb-3">
+    <label for="desc" class="form-label">Description</label>
+    <input type="text" name="desc" class="form-control" id="desc">
+  </div>
+  <div class="mb-3">
+    <label for="price" class="form-label">Price</label>
+    <input type="number" name="price" class="form-control" id="price">
+  </div>
+  <div class="mb-3">
+    <label for="quantity" class="form-label">Quantity</label>
+    <input type="text" name="quantity" class="form-control" id="quantity">
+  </div>
+  <button type="submit" class="btn btn-primary">Add Product</button>
+</form>
+
+{% endblock %}

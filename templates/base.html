@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flask Authentication</title>
+    {{ bootstrap.load_css() }}
+    <link rel="stylesheet" href="/static/css/styles.css"/>
+
+  {% block extra_css %} {% endblock %}
+  </head>
+
+  <body >
+
+    <div class="container hello">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-2 ">
+      <div class="col-md-3 mb-2 mb-md-0">
+        <a href="/" class="d-inline-flex link-body-emphasis text-decoration-none" style="color: Black;font-size: 20px;">
+          <img src="../static/images/icons8-cart-24.png">Shopping Centre
+        </a>
+      </div>
+
+      <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+        <li><a href="#" class="nav-link px-2 link-dark">Home</a></li>
+        <li><a href="{{url_for('products')}}" class="nav-link px-2 link-dark">Products</a></li>
+        <li><a href="#" class="nav-link px-2 link-dark">Pricing</a></li>
+        <li><a href="#" class="nav-link px-2 link-dark">FAQs</a></li>
+        <li><a href="#" class="nav-link px-2 link-dark">About</a></li>
+      </ul>
+
+      <div class="col-md-3 text-end">
+        {% if not current_user.is_authenticated: %}
+        <a class="btn btn-dark me-2" href="{{ url_for('login') }}">Login</a>
+        <a class="btn btn-outline-dark" href="{{ url_for('register') }}">Register</a>
+        {% else: %}
+        <a class="btn btn-outline-dark" href="{{ url_for('logout') }}">Log Out</a>
+        {% endif %}
+
+      </div>
+
+    </header>
+    <div class="hr "></div>
+  </div>
+    {% block content %} {% endblock %}
+    {{ bootstrap.load_js() }}
+  </body>
+</html>
