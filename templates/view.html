@@ -1,0 +1,43 @@
+{% extends "base.html" %} {% block content %}
+<div class="container mt-5">
+
+  <h2>Product Inventory</h2>
+  <a href="{{url_for('add_pro')}}"
+     class="btn btn-primary" tabindex="0"
+     role="button" style="display:inline-block"
+     aria-disabled="true">Add Product</a>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Product Name</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Action </th>
+
+      </tr>
+    </thead>
+    <tbody>
+    {% for product in p %}
+      <tr>
+        <td>{{product.id}}</td>
+          <td><a href="/" style="text-decoration:none" >{{product.name}}</a></td>
+        <td>{{product.price}}</td>
+        <td>{{product.quantity}}</td>
+        <td>
+
+              <a href="{{url_for('modify', id=product.id)}}" class="btn btn-outline-primary" tabindex="-1" role="button" aria-disabled="true">Modify</a>
+              <a href="{{url_for('delete', id=product.id)}}" class="btn btn-outline-danger" tabindex="-1" role="button" aria-disabled="true">Delete</a>
+
+        </td>
+      </tr>
+    {% endfor %}
+
+
+    </tbody>
+  </table>
+</div>
+
+
+
+{% endblock %}

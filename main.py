@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os
+from functools import wraps
 from http import HTTPStatus
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -42,6 +43,8 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     name = db.Column(db.String(100))
+    role = db.Column(db.String(100),nullable=True)
+
 
 # CONFIGURE TABLE FOR PRODUCTS
 class Product(db.Model, UserMixin):
@@ -54,6 +57,14 @@ class Product(db.Model, UserMixin):
     quantity = db.Column(db.Integer)
 
 
+def staff(func):
+    @wraps(func)
+    def  wrapper():
+      if current_user.role in ['admin','staff']:
+          return func()
+      else:
+          return redirect(url_for('home'))
+    return wrapper
 
 # Create a user_loader callback
 @login_manager.user_loader
@@ -114,27 +125,25 @@ def login():
             return render_template("login.html")
         if check_password_hash(user.password, password):
             login_user(user)
-            
+
             return redirect(url_for('products'))
         else:
             flash('Password incorrect, please try again')
             return render_template("login.html")
-
     return render_template("login.html")
 
 
 @app.route('/products')
-@login_required
 def products():
     result = db.session.execute(db.select(Product))
     pro = result.scalars()
 
 
-    return render_template("products.html",pro = pro,i=0)
-
-
+    return render_template("product.html",pro = pro,i=0)
 
 @app.route('/add_pro', methods=["GET", "POST"])
+@login_required
+@staff
 def add_pro():
     if request.method == 'POST':
         # check if the post request has the file part
@@ -167,6 +176,66 @@ def add_pro():
 
     return render_template("add_pro.html")
 
+
+@app.route("/delete")
+@login_required
+@staff
+def delete():
+    num = request.args.get('id')
+    p = db.session.execute(db.select(Product).where(Product.id == num)).scalar()
+    db.session.delete(p)
+    db.session.commit()
+    return redirect('/view')
+
+@app.route("/modify", methods=["GET", "POST"])
+@login_required
+@staff
+def modify():
+    num = request.args.get('id')
+    print(num)
+    if request.method == 'POST':
+        # check if the post request has the file part
+        # print(request.form['file'])
+        if 'file' not in request.files:
+            return redirect(url_for(view))
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        p = db.session.execute(db.select(Product).where(Product.id == num)).scalar()
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            p.img = 'static/product_img/' + filename
+
+        p.name = request.form.get('name')
+        p.desc = request.form.get('desc')
+        p.price = request.form.get('price')
+        p.quantity = request.form.get('quantity')
+        db.session.commit()
+        return redirect('/view')
+
+    p = db.session.execute(db.select(Product).where(Product.id == num)).scalar()
+    name=p.name
+    img = p.img
+    desc = p.desc
+    price = p.price
+    quantity = p.quantity
+
+    return render_template("modify.html",id=num,name=name,i=img,desc=desc,price=price,quantity=quantity)
+
+@app.route('/view', methods=["GET", "POST"])
+@login_required
+@staff
+def view():
+        result = db.session.execute(db.select(Product))
+        pro = result.scalars()
+        return render_template("view.html",p=pro)
+
+@app.route('/viewitem', methods=["GET", "POST"])
+def view_item():
+    num = request.args.get('id')
+    p = db.session.execute(db.select(Product).where(Product.id == num)).scalar()
+    return render_template("view.html",p=pro)
 @app.route('/logout')
 @login_required
 def logout():
@@ -175,4 +244,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True)
